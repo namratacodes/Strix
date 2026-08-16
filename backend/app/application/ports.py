@@ -3,32 +3,23 @@ Application ports: abstract contracts between the application layer and
 infrastructure. This file defines WHAT the system needs, never HOW.
 
 Concrete implementations (PythonASTParser, OllamaExplainer, etc.) live in
-app/infrastructure/ starting in Milestone 3, and are wired in via
-constructor injection — the use case below never imports them directly.
-
-`CodeGraph` is a deliberately minimal placeholder for now. Milestone 3
-will flesh it out into the real intermediate representation (nodes for
-loops, function calls, recursion, etc.) that both the Python AST parser
-and the Tree-sitter parser produce, so downstream engines (algorithm
-detection, complexity estimation) don't care which parser built it.
+app/infrastructure/, and are wired in via constructor injection — the use
+case in use_cases/ never imports them directly.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
 
+from app.application.dto import CodeGraph  # re-exported for existing imports
 from app.domain.entities import AlgorithmMatch, ComplexityResult
 from app.domain.enums import Language
 
-
-class CodeGraph:
-    """
-    Placeholder intermediate representation of parsed code.
-    Replaced with a real structured graph in Milestone 3.
-    """
-
-    def __init__(self, language: Language, raw: Any = None) -> None:
-        self.language = language
-        self.raw = raw
+__all__ = [
+    "CodeGraph",
+    "LanguageParserPort",
+    "AlgorithmDetectorPort",
+    "ComplexityEstimatorPort",
+    "LLMExplainerPort",
+]
 
 
 class LanguageParserPort(ABC):
@@ -59,12 +50,7 @@ class ComplexityEstimatorPort(ABC):
 class LLMExplainerPort(ABC):
     """
     Turns deterministic findings into natural-language explanation.
-
-    Deliberately narrow: this port can ONLY produce text. It has no method
-    that lets it assert a complexity class or algorithm name — that
-    guarantees the LLM narrates the static engine's conclusions, it can
-    never originate or override them (Core Philosophy #1: never blindly
-    trust the LLM).
+    Cannot assert complexity or algorithm identity — narrator-only role.
     """
 
     @abstractmethod

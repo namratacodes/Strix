@@ -1,11 +1,7 @@
 """
-Tests AnalyzeCodeUseCase using FAKE adapters (not real parsers/LLMs, which
-don't exist until later milestones). This is the whole point of coding to
-ports: we can prove the orchestration logic works correctly right now,
-independent of any concrete implementation. When Milestone 3's real
-PythonASTParser lands, this use case class won't need a single line
-changed — only production wiring (main.py's dependency injection) will
-point at the real adapter instead of a fake one.
+Tests AnalyzeCodeUseCase using FAKE adapters (not real parsers/LLMs).
+Updated for Milestone 3's CodeGraph shape (functions + top_level_loops,
+no more bare `raw` field).
 """
 
 from app.application.ports import (
@@ -27,7 +23,7 @@ class FakeParser(LanguageParserPort):
         return Language.PYTHON
 
     def parse(self, source_code: str) -> CodeGraph:
-        return CodeGraph(language=Language.PYTHON, raw=source_code)
+        return CodeGraph(language=Language.PYTHON, functions=(), top_level_loops=())
 
 
 class FakeAlgorithmDetector(AlgorithmDetectorPort):
@@ -44,7 +40,7 @@ class FakeAlgorithmDetector(AlgorithmDetectorPort):
 class FakeComplexityEstimator(ComplexityEstimatorPort):
     def estimate(self, graph: CodeGraph) -> ComplexityResult:
         estimate = ComplexityEstimate(
-            complexity_class="O(n^2)",  # validated against ComplexityClass enum
+            complexity_class="O(n^2)",
             rationale="Two nested loops over n.",
             confidence=ConfidenceLevel.HIGH,
         )
@@ -75,5 +71,4 @@ def test_analyze_code_use_case_orchestrates_full_pipeline():
     assert result.complexity is not None
     assert result.complexity.worst_case.complexity_class.value == "O(n^2)"
     assert result.explanation is not None
-    # Reasoning timeline must reflect every pipeline stage, in order
     assert [step.order for step in result.reasoning_timeline] == [0, 1, 2, 3]
