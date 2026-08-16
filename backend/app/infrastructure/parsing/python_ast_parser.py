@@ -81,6 +81,7 @@ class PythonASTParser(LanguageParserPort):
             loops=loops,
             max_nesting_depth=max_depth,
             calls=tuple(sorted(called_names)),
+            raw_node=func_node,
         )
 
     def _find_loops(self, node: ast.AST, depth: int = 1) -> list[LoopInfo]:

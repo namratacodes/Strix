@@ -34,6 +34,8 @@ class FunctionInfo:
     loops: tuple[LoopInfo, ...]
     max_nesting_depth: int
     calls: tuple[str, ...]
+    
+    raw_node: Any = field(default=None, repr=False, compare=False)
 
 
 @dataclass
