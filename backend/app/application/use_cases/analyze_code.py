@@ -6,10 +6,9 @@ This class is the direct code representation of the PRD's workflow:
   Complexity Engine -> LLM Explanation -> Merge Results -> Reasoning Timeline
 
 It depends only on the abstract ports from application/ports.py — never on
-concrete parsers, detectors, or LLM clients. This is what makes "pluggable
-LLMs" and "AST + Tree-sitter" real architectural properties instead of just
-PRD wishes: swapping OllamaExplainer for an OpenAI-backed one later means
-writing one new adapter class, with ZERO changes to this file.
+concrete parsers, detectors, or LLM clients. Timeline narration is
+delegated to ReasoningTimelineBuilder (Milestone 6), keeping this class
+focused purely on orchestration order, not narration detail.
 """
 
 from app.application.ports import (
@@ -18,7 +17,8 @@ from app.application.ports import (
     LanguageParserPort,
     LLMExplainerPort,
 )
-from app.domain.entities import AnalysisResult, CodeSubmission, ReasoningStep
+from app.application.reasoning_timeline import ReasoningTimelineBuilder
+from app.domain.entities import AnalysisResult, CodeSubmission
 
 
 class AnalyzeCodeUseCase:
@@ -28,55 +28,26 @@ class AnalyzeCodeUseCase:
         algorithm_detector: AlgorithmDetectorPort,
         complexity_estimator: ComplexityEstimatorPort,
         explainer: LLMExplainerPort,
+        timeline_builder: ReasoningTimelineBuilder | None = None,
     ) -> None:
         self._parser = parser
         self._algorithm_detector = algorithm_detector
         self._complexity_estimator = complexity_estimator
         self._explainer = explainer
+        self._timeline_builder = timeline_builder or ReasoningTimelineBuilder()
 
     def execute(self, submission: CodeSubmission) -> AnalysisResult:
-        timeline: list[ReasoningStep] = []
-
         graph = self._parser.parse(submission.source_code)
-        timeline.append(
-            ReasoningStep(
-                order=0,
-                title="Building code graph",
-                detail=f"Parsed {submission.language.value} source into an analysis graph.",
-            )
-        )
-
         algorithm_matches = self._algorithm_detector.detect(graph)
-        timeline.append(
-            ReasoningStep(
-                order=1,
-                title="Detecting algorithm patterns",
-                detail=f"Found {len(algorithm_matches)} candidate pattern(s).",
-            )
-        )
-
         complexity = self._complexity_estimator.estimate(graph)
-        timeline.append(
-            ReasoningStep(
-                order=2,
-                title="Estimating complexity",
-                detail=f"Worst case: {complexity.worst_case.complexity_class.value}.",
-            )
-        )
-
         explanation = self._explainer.explain(algorithm_matches, complexity)
-        timeline.append(
-            ReasoningStep(
-                order=3,
-                title="Generating explanation",
-                detail="Converted findings into a beginner-friendly explanation.",
-            )
-        )
+
+        reasoning_timeline = self._timeline_builder.build(graph, algorithm_matches, complexity)
 
         return AnalysisResult(
             submission_id=submission.id,
             algorithm_matches=algorithm_matches,
             complexity=complexity,
-            reasoning_timeline=timeline,
+            reasoning_timeline=reasoning_timeline,
             explanation=explanation,
         )

@@ -1,7 +1,7 @@
 """
 Tests AnalyzeCodeUseCase using FAKE adapters (not real parsers/LLMs).
-Updated for Milestone 3's CodeGraph shape (functions + top_level_loops,
-no more bare `raw` field).
+Updated for Milestone 6: the timeline now comes from ReasoningTimelineBuilder
+and has 8 data-driven steps instead of 4 generic ones.
 """
 
 from app.application.ports import (
@@ -71,4 +71,7 @@ def test_analyze_code_use_case_orchestrates_full_pipeline():
     assert result.complexity is not None
     assert result.complexity.worst_case.complexity_class.value == "O(n^2)"
     assert result.explanation is not None
-    assert [step.order for step in result.reasoning_timeline] == [0, 1, 2, 3]
+    # Reasoning timeline now has 8 data-driven steps (Milestone 6)
+    assert [step.order for step in result.reasoning_timeline] == list(range(8))
+    algo_step = next(s for s in result.reasoning_timeline if s.title == "Identifying algorithm")
+    assert "Bubble Sort" in algo_step.detail
