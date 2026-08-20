@@ -12,7 +12,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import health
+from app.api.v1 import analyze, health
 from app.core.config import get_settings
 from app.core.logging import configure_logging
 
@@ -38,6 +38,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(health.router, prefix=settings.api_v1_prefix)
+    app.include_router(analyze.router, prefix=settings.api_v1_prefix)
 
     @app.get("/", tags=["root"])
     async def root() -> dict[str, str]:
