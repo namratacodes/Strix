@@ -1,27 +1,40 @@
 import type { Config } from "tailwindcss";
 
-// Design tokens kept centralized here so every feature (editor, timeline,
-// complexity graph, etc.) draws from the same palette instead of hardcoding
-// hex values inline — this is what keeps a dark/glassmorphism UI coherent
-// as the app grows past a handful of components.
+// Design tokens drawn from the Psychic/Dark Pokémon reference set:
+// near-black base, with three glow accents (amber, magenta, toxic-green)
+// used sparingly as focal points -- never as flat fills.
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   darkMode: "class",
   theme: {
     extend: {
       colors: {
-        background: "#0a0a0f",
+        background: "#050507",
         surface: "rgba(255, 255, 255, 0.04)",
         border: "rgba(255, 255, 255, 0.08)",
         primary: {
-          DEFAULT: "#7C3AED",
-          light: "#A78BFA",
+          DEFAULT: "#F5A623",
+          light: "#FFC978",
+          dark: "#B36E00",
         },
-        accent: "#22D3EE",
+        accent: {
+          DEFAULT: "#FF2E7E",
+          light: "#FF6FA8",
+        },
+        toxic: {
+          DEFAULT: "#39FF88",
+          light: "#8CFFC0",
+        },
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["Alex Brush", "cursive"],
         mono: ["JetBrains Mono", "monospace"],
+      },
+      boxShadow: {
+        "glow-amber": "0 0 40px 4px rgba(245, 166, 35, 0.35)",
+        "glow-magenta": "0 0 40px 4px rgba(255, 46, 126, 0.35)",
+        "glow-toxic": "0 0 40px 4px rgba(57, 255, 136, 0.3)",
       },
       backdropBlur: {
         xs: "2px",
