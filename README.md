@@ -6,8 +6,7 @@ STRIX combines deterministic static analysis (Python AST / Tree-sitter) with LLM
 explain *how* it reaches every conclusion about your code — complexity, algorithm identity,
 and optimization suggestions — rather than just asserting an answer.
 
-## Status
-🚧 Milestone 1: Project scaffolding (this commit).
+
 
 ## Running locally
 
@@ -50,7 +49,4 @@ cd backend && pytest
 cd frontend && npm run build
 ```
 
-## Architecture
-See `PROJECT_PRD.md` for full product vision. Backend follows Clean Architecture
-(`domain` → `application` → `infrastructure` / `api`). Frontend follows feature-sliced
-design (`features/*` own their own components, hooks, and API calls).
+
