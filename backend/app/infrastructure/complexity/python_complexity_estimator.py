@@ -15,6 +15,25 @@ from app.domain.value_objects import ComplexityEstimate
 _LOW_NAMES = {"low", "left", "lo", "start"}
 _HIGH_NAMES = {"high", "right", "hi", "end"}
 _MUTATING_METHODS = {"append", "add", "update", "extend", "insert"}
+# Well-known standard-library / builtin functions with textbook complexity.
+# Recognized by name only (not verified for correct usage, e.g. calling
+# bisect on an unsorted list still matches here) -- this is a heuristic
+# that fills a real gap: STRIX can't see inside a builtin's C
+# implementation, so it falls back to the function's documented
+# complexity instead of wrongly defaulting to O(1).
+_BUILTIN_COMPLEXITY: dict[str, ComplexityClass] = {
+    "bisect_left": ComplexityClass.O_LOG_N,
+    "bisect_right": ComplexityClass.O_LOG_N,
+    "bisect": ComplexityClass.O_LOG_N,
+    "sorted": ComplexityClass.O_N_LOG_N,
+    "sort": ComplexityClass.O_N_LOG_N,
+    "max": ComplexityClass.O_N,
+    "min": ComplexityClass.O_N,
+    "sum": ComplexityClass.O_N,
+    "reversed": ComplexityClass.O_N,
+    "count": ComplexityClass.O_N,
+    "index": ComplexityClass.O_N,
+}
 
 
 class PythonComplexityEstimator(ComplexityEstimatorPort):
@@ -70,6 +89,46 @@ class PythonComplexityEstimator(ComplexityEstimatorPort):
             for n in ast.walk(node)
             if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == name
         )
+        
+    def _estimate_from_builtins(self, node: ast.AST) -> ComplexityEstimate | None:
+        """
+        Scans for calls to known standard-library functions and returns
+        the WORST (highest-rank) complexity among any matches found, or
+        None if nothing recognized. Used only as a fallback when no user-
+        written loops or recursion were found -- user code always takes
+        precedence over builtin inference.
+        """
+        matched: list[tuple[str, ComplexityClass]] = []
+        for n in ast.walk(node):
+            if not isinstance(n, ast.Call):
+                continue
+            name = self._call_name(n)
+            if name and name in _BUILTIN_COMPLEXITY:
+                matched.append((name, _BUILTIN_COMPLEXITY[name]))
+
+        if not matched:
+            return None
+
+        worst_name, worst_class = max(matched, key=lambda pair: pair[1].rank)
+        return ComplexityEstimate(
+            complexity_class=worst_class,
+            rationale=(
+                f"No user-written loops or recursion found, but this code calls "
+                f"'{worst_name}', a standard-library function with known "
+                f"{worst_class.value} complexity. This is inferred from the "
+                "builtin's documented behavior, not from analyzing its internal "
+                "implementation (which STRIX can't see)."
+            ),
+            confidence=ConfidenceLevel.MEDIUM,
+        )
+
+    @staticmethod
+    def _call_name(call: ast.Call) -> str | None:
+        if isinstance(call.func, ast.Name):
+            return call.func.id
+        if isinstance(call.func, ast.Attribute):
+            return call.func.attr
+        return None
 
     def _estimate_time(
         self, max_depth: int, recursive_calls: int, node: ast.AST
@@ -125,9 +184,13 @@ class PythonComplexityEstimator(ComplexityEstimatorPort):
                 rationale="Single loop iterating once over the input — linear time.",
                 confidence=ConfidenceLevel.HIGH,
             )
+        builtin_estimate = self._estimate_from_builtins(node)
+        if builtin_estimate is not None:
+            return builtin_estimate
+
         return ComplexityEstimate(
             complexity_class=ComplexityClass.O_1,
-            rationale="No loops or recursion detected — constant-time operations only.",
+            rationale="No loops, recursion, or known complexity-bearing builtin calls detected — constant-time operations only.",
             confidence=ConfidenceLevel.HIGH,
         )
 
