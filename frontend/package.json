@@ -17,6 +17,7 @@
     "@tanstack/react-query": "^5.56.0",
     "framer-motion": "^11.5.0",
     "lucide-react": "^0.445.0",
+    "@monaco-editor/react": "^4.6.0",
     "recharts": "^2.12.7"
   },
   "devDependencies": {

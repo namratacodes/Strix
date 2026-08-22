@@ -1,42 +1,40 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import FogLayer from "./FogLayer";
-
+import { useMutation } from "@tanstack/react-query";
+import CodeEditorPanel, { DEFAULT_SNIPPET } from "./CodeEditorPanel";
+import ResultsPanel from "./ResultsPanel";
+import { analyzeCode, type AnalysisResult } from "./api";
 
 export default function AnalysisPage() {
-  const [analyzed, setAnalyzed] = useState(false);
-  const tint = analyzed ? "toxic" : "danger";
+  const [code, setCode] = useState(DEFAULT_SNIPPET);
+
+  const mutation = useMutation<AnalysisResult, Error, string>({
+    mutationFn: analyzeCode,
+  });
 
   return (
-    <div className="relative min-h-[200vh] text-white">
-      <FogLayer tint={tint} />
-      
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 text-center">
-        <h2 className="text-3xl font-display tracking-wide">
-          {analyzed ? "Analysis complete" : "Awaiting your code"}
-        </h2>
-        <p className="mt-2 max-w-md text-white/60">
-          {analyzed
-            ? "STRIX has traced the story behind your algorithm."
-            : "The code editor lands here in the next milestone. For now, this proves the fog environment and the red-to-green analysis state."}
-        </p>
+    <div className="min-h-screen bg-background bg-grid-dots px-6 py-10">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="font-display text-3xl font-normal tracking-wide text-white">
+            Analyze your code
+          </h1>
+          <a href="/" className="text-xs text-white/40 hover:text-white/70">
+            ← Back home
+          </a>
+        </div>
 
-        {/* Temporary demo control -- real trigger becomes "Run Analysis" once Monaco + API are wired in */}
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setAnalyzed((v) => !v)}
-          className="mt-8 rounded-xl border border-white/20 bg-white/5 px-6 py-2 text-sm text-white/80 hover:bg-white/10"
-        >
-          {analyzed ? "Reset demo" : "Simulate analysis (demo)"}
-        </motion.button>
-      </div>
-
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-6">
-        <div className="max-w-xl rounded-2xl border border-white/10 bg-white/5 p-8 text-center backdrop-blur-sm">
-          <p className="text-white/70">
-            Scroll checkpoint — code editor and reasoning timeline panels arrive here in upcoming milestones.
-          </p>
+        <div className="grid h-[70vh] grid-cols-1 gap-6 lg:grid-cols-2">
+          <CodeEditorPanel
+            value={code}
+            onChange={setCode}
+            onRun={() => mutation.mutate(code)}
+            isRunning={mutation.isPending}
+          />
+          <ResultsPanel
+            result={mutation.data ?? null}
+            isLoading={mutation.isPending}
+            error={mutation.isError ? mutation.error.message : null}
+          />
         </div>
       </div>
     </div>

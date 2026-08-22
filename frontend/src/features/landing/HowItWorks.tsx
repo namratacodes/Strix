@@ -4,17 +4,17 @@ const steps = [
   {
     tag: "Step 1",
     title: "Paste your code",
-    description: "Drop Python code into the editor — no setup, no account needed to try it.",
+    description: "Drop Python code into the editor.No setup, no account needed to try it.",
   },
   {
     tag: "Step 2",
     title: "STRIX analyzes deterministically",
-    description: "Static AST analysis finds loops, recursion, and structure — facts, not guesses.",
+    description: "Static AST analysis finds loops, recursion, and structure facts, not guesses.",
   },
   {
     tag: "Step 3",
     title: "Get an explained result",
-    description: "See the algorithm, complexity, and a step-by-step reasoning timeline behind it.",
+    description: "See the algorithm, complexity, and a step by step reasoning timeline behind it.",
   },
 ];
 
