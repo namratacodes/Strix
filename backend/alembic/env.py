@@ -23,6 +23,12 @@ from app.infrastructure.persistence import models  # noqa: F401 -- registers mod
 
 target_metadata = Base.metadata
 
+from app.core.config import get_settings
+
+# Override the placeholder in alembic.ini with the real URL from .env,
+# so the actual Neon connection string never has to be committed to git.
+config.set_main_option("sqlalchemy.url", get_settings().database_url)
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")

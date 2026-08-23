@@ -11,7 +11,7 @@ introduced later if the API contract needs to diverge from the domain
 model (e.g. API versioning); noted as a deliberate simplification, not
 an oversight.
 """
-
+from uuid import UUID
 from pydantic import BaseModel, Field
 
 from app.domain.enums import Language
@@ -24,3 +24,8 @@ class AnalyzeRequest(BaseModel):
         description="Source code to analyze.",
     )
     language: Language = Language.PYTHON
+    
+class UserResponse(BaseModel):
+    id: UUID
+    email: str
+    display_name: str

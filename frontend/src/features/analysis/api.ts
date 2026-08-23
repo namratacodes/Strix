@@ -45,6 +45,7 @@ export async function analyzeCode(sourceCode: string): Promise<AnalysisResult> {
   const res = await fetch(`${API_BASE_URL}/api/v1/analyze`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify({ source_code: sourceCode, language: "python" }),
   });
 

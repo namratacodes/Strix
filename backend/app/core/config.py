@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     llm_provider: str = "ollama"
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "qwen2.5-coder"
+    
+    google_redirect_uri: str = "http://localhost:8000/api/v1/auth/callback"
+    frontend_url: str = "http://localhost:5173"
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -1,18 +1,14 @@
 """
 STRIX backend entrypoint.
-
-Responsibilities kept deliberately minimal here: create the FastAPI app,
-wire middleware, and mount routers. All actual logic lives in the
-application/domain/infrastructure layers and is reached only through
-the api/ routers.
 """
 
 import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
-from app.api.v1 import analyze, health
+from app.api.v1 import analyze, auth, health, history
 from app.core.config import get_settings
 from app.core.logging import configure_logging
 
@@ -37,8 +33,15 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # Signed session cookie -- holds only `user_id` after Google OAuth
+    # login (Milestone 10b). Uses the same secret key as everything else
+    # session-related, sourced from .env, never hardcoded.
+    app.add_middleware(SessionMiddleware, secret_key=settings.session_secret_key)
+
     app.include_router(health.router, prefix=settings.api_v1_prefix)
     app.include_router(analyze.router, prefix=settings.api_v1_prefix)
+    app.include_router(auth.router, prefix=settings.api_v1_prefix)
+    app.include_router(history.router, prefix=settings.api_v1_prefix)
 
     @app.get("/", tags=["root"])
     async def root() -> dict[str, str]:
