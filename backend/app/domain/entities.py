@@ -76,3 +76,23 @@ class AnalysisResult(BaseModel):
     explanation: str | None = Field(
         default=None, description="LLM-generated natural-language summary"
     )
+
+class User(BaseModel):
+    """A registered STRIX user, authenticated via Google OAuth (Milestone 10b)."""
+
+    id: UUID = Field(default_factory=uuid4)
+    google_id: str
+    email: str
+    display_name: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class AnalysisHistoryEntry(BaseModel):
+    """One saved past analysis, tied to the user who ran it."""
+
+    id: UUID = Field(default_factory=uuid4)
+    user_id: UUID
+    source_code: str
+    language: Language
+    result: AnalysisResult
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

@@ -8,6 +8,9 @@ case in use_cases/ never imports them directly.
 """
 
 from abc import ABC, abstractmethod
+from uuid import UUID
+
+from app.domain.entities import AlgorithmMatch, AnalysisHistoryEntry, ComplexityResult, User
 
 from app.application.dto import CodeGraph  # re-exported for existing imports
 from app.domain.entities import AlgorithmMatch, ComplexityResult
@@ -19,6 +22,8 @@ __all__ = [
     "AlgorithmDetectorPort",
     "ComplexityEstimatorPort",
     "LLMExplainerPort",
+    "UserRepositoryPort",
+    "AnalysisHistoryRepositoryPort"
 ]
 
 
@@ -59,3 +64,24 @@ class LLMExplainerPort(ABC):
         algorithm_matches: list[AlgorithmMatch],
         complexity: ComplexityResult | None,
     ) -> str: ...
+    
+class UserRepositoryPort(ABC):
+    """Persists and retrieves users, keyed by their Google account id."""
+
+    @abstractmethod
+    def get_or_create_by_google_id(
+        self, google_id: str, email: str, display_name: str
+    ) -> User: ...
+
+    @abstractmethod
+    def get_by_id(self, user_id: UUID) -> User | None: ...
+
+
+class AnalysisHistoryRepositoryPort(ABC):
+    """Persists and retrieves a user's past analyses."""
+
+    @abstractmethod
+    def save(self, entry: AnalysisHistoryEntry) -> AnalysisHistoryEntry: ...
+
+    @abstractmethod
+    def list_for_user(self, user_id: UUID, limit: int = 20) -> list[AnalysisHistoryEntry]: ...
