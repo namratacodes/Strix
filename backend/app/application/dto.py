@@ -34,6 +34,7 @@ class FunctionInfo:
     loops: tuple[LoopInfo, ...]
     max_nesting_depth: int
     calls: tuple[str, ...]
+    self_call_count: int = 0
     
     raw_node: Any = field(default=None, repr=False, compare=False)
 

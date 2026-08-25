@@ -18,6 +18,9 @@ from app.application.ports import LanguageParserPort
 from app.domain.enums import Language
 from app.domain.value_objects import CodeLocation
 
+# Node types that start a new function scope. Loop-finding stops when it
+# hits one of these (except at the very top of the scan) so a loop inside
+# a nested function is never miscounted as belonging to its outer function.
 _FUNCTION_SCOPE_NODES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)
 _LOOP_NODES = (ast.For, ast.AsyncFor, ast.While)
 
@@ -71,6 +74,18 @@ class PythonASTParser(LanguageParserPort):
         }
         is_recursive = func_node.name in called_names
 
+        # Count of actual self-call EXPRESSIONS (not deduplicated), so
+        # linear recursion (1 call, e.g. factorial) can be distinguished
+        # from branching recursion (2+ calls, e.g. naive Fibonacci).
+        # `called_names` above is a deduplicated set and can't answer this.
+        self_call_count = sum(
+            1
+            for node in ast.walk(func_node)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == func_node.name
+        )
+
         return FunctionInfo(
             name=func_node.name,
             location=CodeLocation(
@@ -81,6 +96,7 @@ class PythonASTParser(LanguageParserPort):
             loops=loops,
             max_nesting_depth=max_depth,
             calls=tuple(sorted(called_names)),
+            self_call_count=self_call_count,
             raw_node=func_node,
         )
 
