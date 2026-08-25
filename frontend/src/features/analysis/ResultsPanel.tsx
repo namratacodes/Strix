@@ -6,6 +6,7 @@ interface ResultsPanelProps {
   result: AnalysisResult | null;
   isLoading: boolean;
   error: string | null;
+  emptyMessage?: string;
 }
 
 // Confidence acts as a traffic light throughout the results: high = trust
@@ -17,7 +18,12 @@ const CONFIDENCE_STYLES: Record<ConfidenceLevel, string> = {
   low: "border-danger/40 bg-danger/10 text-danger-light",
 };
 
-export default function ResultsPanel({ result, isLoading, error }: ResultsPanelProps) {
+export default function ResultsPanel({
+  result,
+  isLoading,
+  error,
+  emptyMessage = 'Paste code on the left and click "Run Analysis" to see the story behind it.',
+}: ResultsPanelProps) {
   if (isLoading) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
@@ -42,9 +48,7 @@ export default function ResultsPanel({ result, isLoading, error }: ResultsPanelP
   if (!result) {
     return (
       <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
-        <p className="text-sm text-white/40">
-          Paste code on the left and click "Run Analysis" to see the story behind it.
-        </p>
+        <p className="text-sm text-white/40">{emptyMessage}</p>
       </div>
     );
   }

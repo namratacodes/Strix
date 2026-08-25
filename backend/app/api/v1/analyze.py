@@ -29,6 +29,7 @@ from app.infrastructure.language_support import (
 )
 from app.infrastructure.llm.factory import build_llm_explainer
 from app.infrastructure.parsing.cpp_ast_parser import CppSyntaxError
+from app.infrastructure.parsing.java_ast_parser import JavaSyntaxError
 from app.infrastructure.parsing.python_ast_parser import PythonSyntaxError
 from app.infrastructure.persistence.sqlalchemy_history_repository import (
     SqlAlchemyAnalysisHistoryRepository,
@@ -36,7 +37,7 @@ from app.infrastructure.persistence.sqlalchemy_history_repository import (
 
 router = APIRouter(prefix="/analyze", tags=["analyze"])
 
-_PARSER_ERRORS = (PythonSyntaxError, CppSyntaxError)
+_PARSER_ERRORS = (PythonSyntaxError, CppSyntaxError, JavaSyntaxError)
 
 
 def get_analyze_use_case(

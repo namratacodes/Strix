@@ -21,6 +21,7 @@ from app.infrastructure.complexity.python_complexity_estimator import (
 from app.infrastructure.detection.null_algorithm_detector import NullAlgorithmDetector
 from app.infrastructure.detection.python_algorithm_detector import PythonAlgorithmDetector
 from app.infrastructure.parsing.cpp_ast_parser import CppASTParser
+from app.infrastructure.parsing.java_ast_parser import JavaASTParser
 from app.infrastructure.parsing.python_ast_parser import PythonASTParser
 
 _SUPPORTED_LANGUAGES: dict[
@@ -29,6 +30,7 @@ _SUPPORTED_LANGUAGES: dict[
 ] = {
     Language.PYTHON: (PythonASTParser, PythonAlgorithmDetector, PythonComplexityEstimator),
     Language.CPP: (CppASTParser, NullAlgorithmDetector, GenericComplexityEstimator),
+    Language.JAVA: (JavaASTParser, NullAlgorithmDetector, GenericComplexityEstimator),
 }
 
 

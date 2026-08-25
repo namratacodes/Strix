@@ -41,12 +41,17 @@ export interface AnalysisResult {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
-export async function analyzeCode(sourceCode: string): Promise<AnalysisResult> {
+export type SupportedLanguage = "python" | "cpp" | "java";
+
+export async function analyzeCode(
+  sourceCode: string,
+  language: SupportedLanguage = "python"
+): Promise<AnalysisResult> {
   const res = await fetch(`${API_BASE_URL}/api/v1/analyze`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ source_code: sourceCode, language: "python" }),
+    body: JSON.stringify({ source_code: sourceCode, language }),
   });
 
   if (!res.ok) {
