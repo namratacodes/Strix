@@ -82,10 +82,17 @@ export default function CodeEditorPanel({
             value={language}
             onChange={(e) => onLanguageChange(e.target.value as SupportedLanguage)}
             className="rounded-lg border border-white/15 bg-white/5 px-2 py-1 text-xs text-white/70 focus:outline-none"
+            style={{ colorScheme: "dark" }}
           >
-            <option value="python">Python</option>
-            <option value="cpp">C++</option>
-            <option value="java">Java</option>
+            <option value="python" style={{ backgroundColor: "#0a0a0f", color: "#fff" }}>
+              Python
+            </option>
+            <option value="cpp" style={{ backgroundColor: "#0a0a0f", color: "#fff" }}>
+              C++
+            </option>
+            <option value="java" style={{ backgroundColor: "#0a0a0f", color: "#fff" }}>
+              Java
+            </option>
           </select>
           <button
             onClick={onRun}
