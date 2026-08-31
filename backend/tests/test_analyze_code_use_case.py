@@ -10,6 +10,7 @@ from app.application.ports import (
     ComplexityEstimatorPort,
     LanguageParserPort,
     LLMExplainerPort,
+    OptimizerPort,
 )
 from app.application.use_cases.analyze_code import AnalyzeCodeUseCase
 from app.domain.entities import AlgorithmMatch, CodeSubmission, ComplexityResult
@@ -53,6 +54,9 @@ class FakeExplainer(LLMExplainerPort):
     def explain(self, algorithm_matches, complexity) -> str:
         return "This code sorts a list using Bubble Sort, which is O(n^2)."
 
+class FakeOptimizer(OptimizerPort):
+    def suggest(self, algorithm_matches, complexity):
+        return []
 
 def test_analyze_code_use_case_orchestrates_full_pipeline():
     use_case = AnalyzeCodeUseCase(
@@ -60,6 +64,8 @@ def test_analyze_code_use_case_orchestrates_full_pipeline():
         algorithm_detector=FakeAlgorithmDetector(),
         complexity_estimator=FakeComplexityEstimator(),
         explainer=FakeExplainer(),
+        optimizer=FakeOptimizer(),
+        
     )
     submission = CodeSubmission(source_code="def bubble_sort(arr): ...", language=Language.PYTHON)
 
@@ -72,6 +78,6 @@ def test_analyze_code_use_case_orchestrates_full_pipeline():
     assert result.complexity.worst_case.complexity_class.value == "O(n^2)"
     assert result.explanation is not None
     # Reasoning timeline now has 8 data-driven steps (Milestone 6)
-    assert [step.order for step in result.reasoning_timeline] == list(range(8))
+    assert [step.order for step in result.reasoning_timeline] == list(range(9))
     algo_step = next(s for s in result.reasoning_timeline if s.title == "Identifying algorithm")
     assert "Bubble Sort" in algo_step.detail

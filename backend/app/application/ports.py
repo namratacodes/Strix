@@ -10,7 +10,7 @@ case in use_cases/ never imports them directly.
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from app.domain.entities import AlgorithmMatch, AnalysisHistoryEntry, ComplexityResult, User
+from app.domain.entities import AlgorithmMatch, AnalysisHistoryEntry, ComplexityResult, OptimizationSuggestion, User
 
 from app.application.dto import CodeGraph  # re-exported for existing imports
 from app.domain.entities import AlgorithmMatch, ComplexityResult
@@ -85,3 +85,11 @@ class AnalysisHistoryRepositoryPort(ABC):
 
     @abstractmethod
     def list_for_user(self, user_id: UUID, limit: int = 20) -> list[AnalysisHistoryEntry]: ...
+    
+class OptimizerPort(ABC):
+    @abstractmethod
+    def suggest(
+        self,
+        algorithm_matches: list[AlgorithmMatch],
+        complexity: ComplexityResult | None,
+    ) -> list[OptimizationSuggestion]: ...

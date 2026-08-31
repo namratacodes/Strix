@@ -16,6 +16,7 @@ from app.application.ports import (
     ComplexityEstimatorPort,
     LanguageParserPort,
     LLMExplainerPort,
+    OptimizerPort,
 )
 from app.application.reasoning_timeline import ReasoningTimelineBuilder
 from app.domain.entities import AnalysisResult, CodeSubmission
@@ -28,12 +29,14 @@ class AnalyzeCodeUseCase:
         algorithm_detector: AlgorithmDetectorPort,
         complexity_estimator: ComplexityEstimatorPort,
         explainer: LLMExplainerPort,
+        optimizer: OptimizerPort,
         timeline_builder: ReasoningTimelineBuilder | None = None,
     ) -> None:
         self._parser = parser
         self._algorithm_detector = algorithm_detector
         self._complexity_estimator = complexity_estimator
         self._explainer = explainer
+        self._optimizer = optimizer
         self._timeline_builder = timeline_builder or ReasoningTimelineBuilder()
 
     def execute(self, submission: CodeSubmission) -> AnalysisResult:
@@ -41,8 +44,11 @@ class AnalyzeCodeUseCase:
         algorithm_matches = self._algorithm_detector.detect(graph)
         complexity = self._complexity_estimator.estimate(graph)
         explanation = self._explainer.explain(algorithm_matches, complexity)
+        optimization_suggestions = self._optimizer.suggest(algorithm_matches, complexity)
 
-        reasoning_timeline = self._timeline_builder.build(graph, algorithm_matches, complexity)
+        reasoning_timeline = self._timeline_builder.build(
+            graph, algorithm_matches, complexity, optimization_suggestions
+        )
 
         return AnalysisResult(
             submission_id=submission.id,
@@ -50,4 +56,5 @@ class AnalyzeCodeUseCase:
             complexity=complexity,
             reasoning_timeline=reasoning_timeline,
             explanation=explanation,
+            optimization_suggestions=optimization_suggestions,
         )

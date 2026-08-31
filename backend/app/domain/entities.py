@@ -61,6 +61,14 @@ class ComplexityResult(BaseModel):
     worst_case: ComplexityEstimate
     space: ComplexityEstimate
 
+class OptimizationSuggestion(BaseModel):
+    title: str = Field(min_length=1)
+    current_approach: str = Field(min_length=1)
+    suggested_approach: str = Field(min_length=1)
+    current_complexity: str = Field(min_length=1)
+    suggested_complexity: str = Field(min_length=1)
+    rationale: str = Field(min_length=1)
+    confidence: ConfidenceLevel
 
 class AnalysisResult(BaseModel):
     """
@@ -73,9 +81,9 @@ class AnalysisResult(BaseModel):
     algorithm_matches: list[AlgorithmMatch] = Field(default_factory=list)
     complexity: ComplexityResult | None = None
     reasoning_timeline: list[ReasoningStep] = Field(default_factory=list)
-    explanation: str | None = Field(
-        default=None, description="LLM-generated natural-language summary"
-    )
+    explanation: str | None = None
+    optimization_suggestions: list[OptimizationSuggestion] = Field(default_factory=list)
+    
 
 class User(BaseModel):
     """A registered STRIX user, authenticated via Google OAuth (Milestone 10b)."""
@@ -96,3 +104,4 @@ class AnalysisHistoryEntry(BaseModel):
     language: Language
     result: AnalysisResult
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+

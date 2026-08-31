@@ -102,6 +102,29 @@ export default function ResultsPanel({
         </section>
       )}
 
+      {result.optimization_suggestions.length > 0 && (
+        <section>
+          <h3 className="text-xs uppercase tracking-wide text-white/40">Optimization</h3>
+          <div className="mt-2 flex flex-col gap-3">
+            {result.optimization_suggestions.map((s) => (
+              <div key={s.title} className="rounded-lg border border-accent/30 bg-accent/5 p-4">
+                <p className="text-sm font-medium text-accent-light">{s.title}</p>
+                <div className="mt-2 flex items-center gap-2 text-xs">
+                  <span className="rounded bg-danger/10 px-2 py-0.5 text-danger-light">
+                    {s.current_complexity}
+                  </span>
+                  <span className="text-white/40">→</span>
+                  <span className="rounded bg-toxic/10 px-2 py-0.5 text-toxic-light">
+                    {s.suggested_complexity}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-white/60">{s.rationale}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section>
         <h3 className="text-xs uppercase tracking-wide text-white/40">Reasoning Timeline</h3>
         <div className="mt-2">

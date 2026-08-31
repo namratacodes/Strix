@@ -18,8 +18,8 @@ def test_timeline_has_eight_steps_in_order():
     )
     steps = builder.build(graph, [], complexity)
 
-    assert len(steps) == 8
-    assert [s.order for s in steps] == list(range(8))
+    assert len(steps) == 9
+    assert [s.order for s in steps] == list(range(9))
     assert steps[0].title == "Detecting language"
     assert steps[-1].title == "Generating explanation"
 

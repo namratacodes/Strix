@@ -37,6 +37,7 @@ export interface AnalysisResult {
   complexity: ComplexityResult | null;
   reasoning_timeline: ReasoningStep[];
   explanation: string | null;
+  optimization_suggestions: OptimizationSuggestion[];
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
@@ -60,4 +61,13 @@ export async function analyzeCode(
   }
 
   return res.json();
+}
+export interface OptimizationSuggestion {
+  title: string;
+  current_approach: string;
+  suggested_approach: string;
+  current_complexity: string;
+  suggested_complexity: string;
+  rationale: string;
+  confidence: ConfidenceLevel;
 }

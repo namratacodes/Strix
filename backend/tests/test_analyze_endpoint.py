@@ -32,7 +32,7 @@ def bubble_sort(arr):
     algo_names = [m["name"] for m in body["algorithm_matches"]]
     assert "Bubble Sort" in algo_names
     assert body["complexity"]["worst_case"]["complexity_class"] == "O(n^2)"
-    assert len(body["reasoning_timeline"]) == 8
+    assert len(body["reasoning_timeline"]) == 9
     assert body["explanation"]
 
 

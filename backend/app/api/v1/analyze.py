@@ -34,6 +34,7 @@ from app.infrastructure.parsing.python_ast_parser import PythonSyntaxError
 from app.infrastructure.persistence.sqlalchemy_history_repository import (
     SqlAlchemyAnalysisHistoryRepository,
 )
+from app.infrastructure.optimization.rule_based_optimizer import RuleBasedOptimizer
 
 router = APIRouter(prefix="/analyze", tags=["analyze"])
 
@@ -56,6 +57,7 @@ def get_analyze_use_case(
         algorithm_detector=build_algorithm_detector(request.language),
         complexity_estimator=build_complexity_estimator(request.language),
         explainer=build_llm_explainer(settings),
+        optimizer=RuleBasedOptimizer(),
     )
 
 

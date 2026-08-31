@@ -11,7 +11,7 @@ summarize in natural language, never replace.
 """
 
 from app.application.dto import CodeGraph
-from app.domain.entities import AlgorithmMatch, ComplexityResult, ReasoningStep
+from app.domain.entities import AlgorithmMatch, ComplexityResult, OptimizationSuggestion, ReasoningStep
 
 
 class ReasoningTimelineBuilder:
@@ -20,7 +20,9 @@ class ReasoningTimelineBuilder:
         graph: CodeGraph,
         algorithm_matches: list[AlgorithmMatch],
         complexity: ComplexityResult,
+        optimization_suggestions: list[OptimizationSuggestion] | None = None,
     ) -> list[ReasoningStep]:
+        optimization_suggestions = optimization_suggestions or []
         steps: list[ReasoningStep] = []
 
         steps.append(
@@ -90,6 +92,19 @@ class ReasoningTimelineBuilder:
                     f"Auxiliary space: {complexity.space.complexity_class.value} "
                     f"({complexity.space.confidence.value} confidence). "
                     f"{complexity.space.rationale}"
+                ),
+            )
+        )
+        
+        steps.append(
+            self._step(
+                len(steps),
+                "Searching for optimizations",
+                (
+                    f"Found {len(optimization_suggestions)} potential optimization(s): "
+                    + "; ".join(s.title for s in optimization_suggestions) + "."
+                    if optimization_suggestions
+                    else "No confident optimization opportunity found for the matched pattern(s)."
                 ),
             )
         )
