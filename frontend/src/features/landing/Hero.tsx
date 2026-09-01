@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import TypewriterText from "./TypewriterText";
 
 function scrollToHowItWorks() {
   document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
@@ -12,7 +13,7 @@ export default function Hero() {
     <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center px-6 py-24">
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/lightning-bg.jpg')" }}
+        
       />
       <div className="absolute inset-0 bg-background/80" />
 
@@ -32,7 +33,7 @@ export default function Hero() {
         </motion.button>
 
         <div className="relative">
-          <h1 className="text-[9rem] leading-none font-display font-normal text-cracked">
+          <h1 className="text-[9rem] leading-none font-display font-normal uppercase tracking-wide text-cracked">
             Strix
           </h1>
           <h1
@@ -43,8 +44,8 @@ export default function Hero() {
           </h1>
         </div>
 
-        <p className="mt-3 text-lg text-slate-300/70 tracking-wide">
-          Every Algorithm Has a Story.
+        <p className="mt-3 h-7 text-lg text-slate-300/70 tracking-wide">
+          <TypewriterText text="Every Algorithm Has a Story." />
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">

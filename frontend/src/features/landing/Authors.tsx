@@ -9,7 +9,7 @@ export default function Authors() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.5 }}
-          className="font-display text-3xl font-normal tracking-wide text-white"
+          className="font-heading text-3xl font-bold tracking-tight text-white"
         >
           Built by
         </motion.h2>

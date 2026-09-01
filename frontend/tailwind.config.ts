@@ -28,7 +28,8 @@ export default {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Alex Brush", "cursive"],
+        display: ["Anton", "sans-serif"],
+        heading: ["Plus Jakarta Sans", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
       boxShadow: {
