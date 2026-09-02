@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import type { AnalysisResult, ConfidenceLevel } from "./api";
 import ReasoningTimeline from "./ReasoningTimeline";
+import ComplexityGraph from "./ComplexityGraph";
 
 interface ResultsPanelProps {
   result: AnalysisResult | null;
@@ -91,6 +92,12 @@ export default function ResultsPanel({
               <p className="text-[11px] text-white/50">Space</p>
               <p className="text-lg font-semibold">{result.complexity.space.complexity_class}</p>
             </div>
+          </div>
+          <div className="mt-3">
+            <ComplexityGraph
+              timeClass={result.complexity.worst_case.complexity_class}
+              spaceClass={result.complexity.space.complexity_class}
+            />
           </div>
         </section>
       )}
