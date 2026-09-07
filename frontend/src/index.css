@@ -28,3 +28,58 @@ body {
     background-size: 22px 22px;
   }
 }
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  html,
+  body {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  #report-content,
+  #report-content * {
+    visibility: visible !important;
+  }
+
+  #report-content {
+    position: static !important;
+    display: block !important;
+
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+
+    overflow: visible !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background: white !important;
+    color: black !important;
+  }
+
+  #report-content * {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+
+    background: transparent !important;
+    color: black !important;
+
+    box-shadow: none !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

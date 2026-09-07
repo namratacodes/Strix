@@ -55,7 +55,10 @@ export default function ResultsPanel({
   }
 
   return (
-    <div className="flex h-full flex-col gap-6 overflow-y-auto rounded-2xl border border-white/10 bg-white/5 p-6">
+    <div
+      id="report-content"
+      className="flex h-full flex-col gap-6 overflow-y-auto rounded-2xl border border-white/10 bg-white/5 p-6"
+    >
       <section>
         <h3 className="text-xs uppercase tracking-wide text-white/40">Algorithm</h3>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -71,6 +74,14 @@ export default function ResultsPanel({
               {m.name} · {m.confidence} confidence
             </span>
           ))}
+        </div>
+        <div className="flex justify-end print:hidden">
+          <button
+            onClick={() => window.print()}
+            className="rounded-lg border border-white/15 px-3 py-1.5 text-xs text-white/60 hover:bg-white/10"
+          >
+            Download PDF
+          </button>
         </div>
       </section>
 

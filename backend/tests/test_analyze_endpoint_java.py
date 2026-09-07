@@ -26,7 +26,8 @@ public class Solution {
     assert response.status_code == 200
     body = response.json()
     assert body["complexity"]["worst_case"]["complexity_class"] == "O(n^2)"
-    assert body["algorithm_matches"] == []
+    algo_names = [m["name"] for m in body["algorithm_matches"]]
+    assert "Bubble Sort" in algo_names
 
 
 def test_analyze_java_recursive_factorial_returns_linear():

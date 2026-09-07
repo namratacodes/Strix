@@ -2,6 +2,10 @@
 PythonAlgorithmDetector: the first real (non-fake) implementation of
 AlgorithmDetectorPort.
 
+5 patterns detected, each with a genuine structural signature:
+Bubble Sort, Binary Search, Two Pointer, Two Sum (Brute Force),
+Duplicate Check (Brute Force). Every match includes a rationale
+explaining exactly which structural feature triggered it.
 """
 
 import ast
@@ -24,6 +28,8 @@ class PythonAlgorithmDetector(AlgorithmDetectorPort):
             matches.extend(self._detect_bubble_sort(func))
             matches.extend(self._detect_binary_search(func))
             matches.extend(self._detect_two_pointer(func))
+            matches.extend(self._detect_two_sum_brute_force(func))
+            matches.extend(self._detect_duplicate_check_brute_force(func))
         return matches
 
     # --- Bubble Sort -----------------------------------------------------
@@ -144,3 +150,71 @@ class PythonAlgorithmDetector(AlgorithmDetectorPort):
         if incremented and decremented:
             return sorted(incremented)[0], sorted(decremented)[0]
         return None
+
+    # --- Two Sum (Brute Force) -----------------------------------------------------
+
+    def _detect_two_sum_brute_force(self, func: FunctionInfo) -> list[AlgorithmMatch]:
+        if len(func.loops) != 2 or func.max_nesting_depth != 2:
+            return []
+        if not self._has_pair_sum_comparison(func.raw_node):
+            return []
+        return [
+            AlgorithmMatch(
+                name="Two Sum (Brute Force)",
+                confidence=ConfidenceLevel.HIGH,
+                location=func.location,
+                rationale=(
+                    "Two nested loops with a comparison of the form "
+                    "'a + b == target' — the classic brute-force Two Sum "
+                    "signature, checking every pair for a matching sum."
+                ),
+            )
+        ]
+
+    @staticmethod
+    def _has_pair_sum_comparison(node: ast.AST) -> bool:
+        for n in ast.walk(node):
+            if (
+                isinstance(n, ast.Compare)
+                and len(n.ops) == 1
+                and isinstance(n.ops[0], ast.Eq)
+            ):
+                left, right = n.left, n.comparators[0]
+                if isinstance(left, ast.BinOp) and isinstance(left.op, ast.Add):
+                    return True
+                if isinstance(right, ast.BinOp) and isinstance(right.op, ast.Add):
+                    return True
+        return False
+
+    # --- Duplicate Check (Brute Force) -----------------------------------------------------
+
+    def _detect_duplicate_check_brute_force(self, func: FunctionInfo) -> list[AlgorithmMatch]:
+        if len(func.loops) != 2 or func.max_nesting_depth != 2:
+            return []
+        if not self._has_element_equality_comparison(func.raw_node):
+            return []
+        return [
+            AlgorithmMatch(
+                name="Duplicate Check (Brute Force)",
+                confidence=ConfidenceLevel.HIGH,
+                location=func.location,
+                rationale=(
+                    "Two nested loops comparing indexed elements for "
+                    "equality (e.g. arr[i] == arr[j]) — the brute-force "
+                    "signature for checking whether any two elements match."
+                ),
+            )
+        ]
+
+    @staticmethod
+    def _has_element_equality_comparison(node: ast.AST) -> bool:
+        for n in ast.walk(node):
+            if (
+                isinstance(n, ast.Compare)
+                and len(n.ops) == 1
+                and isinstance(n.ops[0], ast.Eq)
+            ):
+                left, right = n.left, n.comparators[0]
+                if isinstance(left, ast.Subscript) and isinstance(right, ast.Subscript):
+                    return True
+        return False
