@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { fetchHistory, type HistoryEntry } from "./api";
 import ResultsPanel from "../analysis/ResultsPanel";
 import { loginUrl } from "../auth/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { fetchHistory, updateHistoryEntry, type HistoryEntry } from "./api";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
@@ -36,7 +37,23 @@ export default function HistoryPage() {
   });
 
   const isUnauthenticated =
-    isError && (error as Error).message === "UNAUTHENTICATED";
+    isError && (error as Error).message === "UNAUTHENTICATED";  const queryClient = useQueryClient();
+
+  async function togglePin(entry: HistoryEntry, e: React.MouseEvent) {
+    e.stopPropagation();
+    await updateHistoryEntry(entry.id, { is_pinned: !entry.is_pinned });
+    queryClient.invalidateQueries({ queryKey: ["history"] });
+  }
+
+  async function rename(entry: HistoryEntry, e: React.MouseEvent) {
+    e.stopPropagation();
+    const newLabel = window.prompt("Name this analysis:", entry.label ?? summaryLine(entry));
+    if (newLabel === null) return;
+    await updateHistoryEntry(entry.id, { label: newLabel });
+    queryClient.invalidateQueries({ queryKey: ["history"] });
+  }
+
+  
 
   return (
     <div className="min-h-screen bg-background bg-grid-dots px-6 py-10">
@@ -108,14 +125,19 @@ export default function HistoryPage() {
                       : "border-white/10 bg-white/5 hover:bg-white/10"
                   }`}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-medium text-white">
-                      {summaryLine(entry)}
+                      {entry.label ?? summaryLine(entry)}
                     </span>
-
-                    <span className="text-[11px] text-white/40">
-                      {formatDate(entry.created_at)}
-                    </span>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <button onClick={(e) => rename(entry, e)} className="text-[11px] text-white/40 hover:text-white/70">
+                        Rename
+                      </button>
+                      <button onClick={(e) => togglePin(entry, e)} className="text-sm">
+                        {entry.is_pinned ? "★" : "☆"}
+                      </button>
+                      <span className="text-[11px] text-white/40">{formatDate(entry.created_at)}</span>
+                    </div>
                   </div>
 
                   <pre className="mt-2 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-xs text-white/40">

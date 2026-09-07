@@ -7,6 +7,8 @@ export interface HistoryEntry {
   language: string;
   result: AnalysisResult;
   created_at: string;
+  is_pinned: boolean;
+  label: string | null;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
@@ -17,5 +19,19 @@ export async function fetchHistory(): Promise<HistoryEntry[]> {
     throw new Error("UNAUTHENTICATED");
   }
   if (!res.ok) throw new Error("Failed to fetch history");
+  return res.json();
+}
+
+export async function updateHistoryEntry(
+  id: string,
+  updates: { is_pinned?: boolean; label?: string }
+): Promise<HistoryEntry> {
+  const res = await fetch(`${API_BASE_URL}/api/v1/history/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(updates),
+  });
+  if (!res.ok) throw new Error("Failed to update history entry");
   return res.json();
 }
