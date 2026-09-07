@@ -11,6 +11,7 @@ from sqlalchemy import JSON, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+from sqlalchemy import Boolean
 
 
 class UserModel(Base):
@@ -40,3 +41,5 @@ class AnalysisHistoryModel(Base):
     )
 
     user: Mapped["UserModel"] = relationship(back_populates="history_entries")
+    is_pinned: Mapped[bool] = mapped_column(Boolean, default=False)
+    label: Mapped[str | None] = mapped_column(String(255), nullable=True)

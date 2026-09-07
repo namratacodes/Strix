@@ -96,12 +96,12 @@ class User(BaseModel):
 
 
 class AnalysisHistoryEntry(BaseModel):
-    """One saved past analysis, tied to the user who ran it."""
-
     id: UUID = Field(default_factory=uuid4)
     user_id: UUID
     source_code: str
     language: Language
     result: AnalysisResult
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    is_pinned: bool = False
+    label: str | None = None
 

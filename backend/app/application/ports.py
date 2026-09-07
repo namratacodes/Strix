@@ -86,6 +86,11 @@ class AnalysisHistoryRepositoryPort(ABC):
     @abstractmethod
     def list_for_user(self, user_id: UUID, limit: int = 20) -> list[AnalysisHistoryEntry]: ...
     
+    @abstractmethod
+    def update(
+        self, entry_id: UUID, user_id: UUID, is_pinned: bool | None = None, label: str | None = None
+    ) -> AnalysisHistoryEntry | None: ...
+    
 class OptimizerPort(ABC):
     @abstractmethod
     def suggest(

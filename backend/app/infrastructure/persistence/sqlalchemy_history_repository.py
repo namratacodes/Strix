@@ -29,7 +29,7 @@ class SqlAlchemyAnalysisHistoryRepository(AnalysisHistoryRepositoryPort):
         models = (
             self._db.query(AnalysisHistoryModel)
             .filter_by(user_id=user_id)
-            .order_by(AnalysisHistoryModel.created_at.desc())
+            .order_by(AnalysisHistoryModel.is_pinned.desc(), AnalysisHistoryModel.created_at.desc())
             .limit(limit)
             .all()
         )
@@ -44,4 +44,24 @@ class SqlAlchemyAnalysisHistoryRepository(AnalysisHistoryRepositoryPort):
             language=model.language,
             result=AnalysisResult.model_validate(model.result_json),
             created_at=model.created_at,
+            is_pinned=model.is_pinned,
+            label=model.label,
         )
+        
+    def update(
+        self, entry_id: UUID, user_id: UUID, is_pinned: bool | None = None, label: str | None = None
+    ) -> AnalysisHistoryEntry | None:
+        model = (
+            self._db.query(AnalysisHistoryModel)
+            .filter_by(id=entry_id, user_id=user_id)
+             .one_or_none()
+        )
+        if model is None:
+            return None
+        if is_pinned is not None:
+            model.is_pinned = is_pinned
+        if label is not None:
+            model.label = label
+        self._db.commit()
+        self._db.refresh(model)
+        return self._to_domain(model)
