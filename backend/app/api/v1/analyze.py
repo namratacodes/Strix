@@ -12,15 +12,22 @@ hardcoded if/else here -- this file doesn't need to know HOW MANY
 languages are supported, only whether the requested one is.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.api.v1.dependencies import get_optional_current_user
 from app.api.v1.schemas import AnalyzeRequest
 from app.application.use_cases.analyze_code import AnalyzeCodeUseCase
 from app.core.config import Settings, get_settings
 from app.core.database import get_db
-from app.domain.entities import AnalysisHistoryEntry, AnalysisResult, CodeSubmission, User
+from app.domain.entities import (
+    AnalysisHistoryEntry,
+    AnalysisResult,
+    CodeSubmission,
+    User,
+)
 from app.infrastructure.language_support import (
     build_algorithm_detector,
     build_complexity_estimator,
@@ -28,38 +35,43 @@ from app.infrastructure.language_support import (
     is_language_supported,
 )
 from app.infrastructure.llm.factory import build_llm_explainer
+from app.infrastructure.optimization.rule_based_optimizer import RuleBasedOptimizer
 from app.infrastructure.parsing.cpp_ast_parser import CppSyntaxError
 from app.infrastructure.parsing.java_ast_parser import JavaSyntaxError
 from app.infrastructure.parsing.python_ast_parser import PythonSyntaxError
 from app.infrastructure.persistence.sqlalchemy_history_repository import (
     SqlAlchemyAnalysisHistoryRepository,
 )
-from app.infrastructure.optimization.rule_based_optimizer import RuleBasedOptimizer
 
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 limiter = Limiter(key_func=get_remote_address)
+
 router = APIRouter(prefix="/analyze", tags=["analyze"])
 
-_PARSER_ERRORS = (PythonSyntaxError, CppSyntaxError, JavaSyntaxError)
+_PARSER_ERRORS = (
+    PythonSyntaxError,
+    CppSyntaxError,
+    JavaSyntaxError,
+)
 
 
 def get_analyze_use_case(
-    request: AnalyzeRequest, settings: Settings = Depends(get_settings)
+    analyze_request: AnalyzeRequest,
+    settings: Settings = Depends(get_settings),
 ) -> AnalyzeCodeUseCase:
-    if not is_language_supported(request.language):
+    if not is_language_supported(analyze_request.language):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
-                f"Language '{request.language.value}' is not supported yet. "
+                f"Language '{analyze_request.language.value}' is not supported yet. "
                 "Currently supported: Python, C++."
             ),
         )
+
     return AnalyzeCodeUseCase(
-        parser=build_parser(request.language),
-        algorithm_detector=build_algorithm_detector(request.language),
-        complexity_estimator=build_complexity_estimator(request.language),
+        parser=build_parser(analyze_request.language),
+        algorithm_detector=build_algorithm_detector(analyze_request.language),
+        complexity_estimator=build_complexity_estimator(analyze_request.language),
         explainer=build_llm_explainer(settings),
         optimizer=RuleBasedOptimizer(),
     )
@@ -68,12 +80,16 @@ def get_analyze_use_case(
 @router.post("", response_model=AnalysisResult)
 @limiter.limit("20/minute")
 async def analyze_code(
-    request: AnalyzeRequest,
+    request: Request,
+    analyze_request: AnalyzeRequest,
     use_case: AnalyzeCodeUseCase = Depends(get_analyze_use_case),
     current_user: User | None = Depends(get_optional_current_user),
     db: Session = Depends(get_db),
 ) -> AnalysisResult:
-    submission = CodeSubmission(source_code=request.source_code, language=request.language)
+    submission = CodeSubmission(
+        source_code=analyze_request.source_code,
+        language=analyze_request.language,
+    )
 
     try:
         result = use_case.execute(submission)
@@ -85,11 +101,12 @@ async def analyze_code(
 
     if current_user is not None:
         history_repo = SqlAlchemyAnalysisHistoryRepository(db)
+
         history_repo.save(
             AnalysisHistoryEntry(
                 user_id=current_user.id,
-                source_code=request.source_code,
-                language=request.language,
+                source_code=analyze_request.source_code,
+                language=analyze_request.language,
                 result=result,
             )
         )
