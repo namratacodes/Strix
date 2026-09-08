@@ -32,7 +32,7 @@ export default function Authors() {
           </p>
 
           <a
-            href="https://github.com/namratacodes/Strix"
+            href="https://github.com/namratacodes"
             target="_blank"
             rel="noreferrer"
             className="mt-4 rounded-lg border border-white/15 px-4 py-1.5 text-xs text-white/70 transition-colors hover:bg-white/10"

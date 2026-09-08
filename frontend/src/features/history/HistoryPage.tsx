@@ -35,6 +35,8 @@ export default function HistoryPage() {
     queryKey: ["history"],
     queryFn: fetchHistory,
   });
+  const pinned = data?.filter((e) => e.is_pinned) ?? [];
+  const unpinned = data?.filter((e) => !e.is_pinned) ?? [];
 
   const isUnauthenticated =
     isError && (error as Error).message === "UNAUTHENTICATED";  const queryClient = useQueryClient();
@@ -108,43 +110,48 @@ export default function HistoryPage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
             {/* History list */}
-            <div className="flex flex-col gap-3">
-              {data.map((entry, i) => (
-                <motion.button
-                  key={entry.id}
-                  onClick={() => setSelected(entry)}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.3,
-                    delay: i * 0.05,
-                  }}
-                  className={`rounded-xl border px-4 py-3 text-left transition-colors ${
-                    selected?.id === entry.id
-                      ? "border-accent/50 bg-accent/10"
-                      : "border-white/10 bg-white/5 hover:bg-white/10"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-medium text-white">
-                      {entry.label ?? summaryLine(entry)}
-                    </span>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <button onClick={(e) => rename(entry, e)} className="text-[11px] text-white/40 hover:text-white/70">
-                        Rename
-                      </button>
-                      <button onClick={(e) => togglePin(entry, e)} className="text-sm">
-                        {entry.is_pinned ? "★" : "☆"}
-                      </button>
-                      <span className="text-[11px] text-white/40">{formatDate(entry.created_at)}</span>
-                    </div>
+            <div className="flex flex-col gap-6">
+              {pinned.length > 0 && (
+                <div>
+                  <h2 className="mb-2 text-xs uppercase tracking-wide text-white/40">
+                    ★ Favorites
+                  </h2>
+                  <div className="flex flex-col gap-3">
+                    {pinned.map((entry, i) => (
+                      <HistoryCard
+                        key={entry.id}
+                        entry={entry}
+                        index={i}
+                        isSelected={selected?.id === entry.id}
+                        onSelect={() => setSelected(entry)}
+                        onTogglePin={togglePin}
+                        onRename={rename}
+                      />
+                    ))}
                   </div>
+                </div>
+              )}
 
-                  <pre className="mt-2 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-xs text-white/40">
-                    {entry.source_code.trim().split("\n")[0]}
-                  </pre>
-                </motion.button>
-              ))}
+              {unpinned.length > 0 && (
+                <div>
+                  <h2 className="mb-2 text-xs uppercase tracking-wide text-white/40">
+                    All history
+                  </h2>
+                  <div className="flex flex-col gap-3">
+                    {unpinned.map((entry, i) => (
+                      <HistoryCard
+                        key={entry.id}
+                        entry={entry}
+                        index={i}
+                        isSelected={selected?.id === entry.id}
+                        onSelect={() => setSelected(entry)}
+                        onTogglePin={togglePin}
+                        onRename={rename}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Results */}
@@ -160,5 +167,45 @@ export default function HistoryPage() {
         )}
       </div>
     </div>
+  );
+}
+interface HistoryCardProps {
+  entry: HistoryEntry;
+  index: number;
+  isSelected: boolean;
+  onSelect: () => void;
+  onTogglePin: (entry: HistoryEntry, e: React.MouseEvent) => void;
+  onRename: (entry: HistoryEntry, e: React.MouseEvent) => void;
+}
+
+function HistoryCard({ entry, index, isSelected, onSelect, onTogglePin, onRename }: HistoryCardProps) {
+  return (
+    <motion.button
+      onClick={onSelect}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
+      className={`rounded-xl border px-4 py-3 text-left transition-colors ${
+        isSelected ? "border-accent/50 bg-accent/10" : "border-white/10 bg-white/5 hover:bg-white/10"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-medium text-white">
+          {entry.label ?? summaryLine(entry)}
+        </span>
+        <div className="flex shrink-0 items-center gap-2">
+          <button onClick={(e) => onRename(entry, e)} className="text-[11px] text-white/40 hover:text-white/70">
+            Rename
+          </button>
+          <button onClick={(e) => onTogglePin(entry, e)} className="text-sm">
+            {entry.is_pinned ? "★" : "☆"}
+          </button>
+          <span className="text-[11px] text-white/40">{formatDate(entry.created_at)}</span>
+        </div>
+      </div>
+      <pre className="mt-2 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-xs text-white/40">
+        {entry.source_code.trim().split("\n")[0]}
+      </pre>
+    </motion.button>
   );
 }
