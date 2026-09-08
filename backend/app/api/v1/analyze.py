@@ -36,6 +36,10 @@ from app.infrastructure.persistence.sqlalchemy_history_repository import (
 )
 from app.infrastructure.optimization.rule_based_optimizer import RuleBasedOptimizer
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
 router = APIRouter(prefix="/analyze", tags=["analyze"])
 
 _PARSER_ERRORS = (PythonSyntaxError, CppSyntaxError, JavaSyntaxError)
@@ -62,6 +66,7 @@ def get_analyze_use_case(
 
 
 @router.post("", response_model=AnalysisResult)
+@limiter.limit("20/minute")
 async def analyze_code(
     request: AnalyzeRequest,
     use_case: AnalyzeCodeUseCase = Depends(get_analyze_use_case),
