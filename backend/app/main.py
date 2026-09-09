@@ -43,11 +43,12 @@ def create_app() -> FastAPI:
     # Signed session cookie -- holds only `user_id` after Google OAuth
     # login (Milestone 10b). Uses the same secret key as everything else
     # session-related, sourced from .env, never hardcoded.
+    is_production = settings.environment == "production"
     app.add_middleware(
         SessionMiddleware,
         secret_key=settings.session_secret_key,
-        https_only=settings.environment == "production",
-        same_site="lax",
+        https_only=is_production,
+        same_site="none" if is_production else "lax",
     )
 
     app.include_router(health.router, prefix=settings.api_v1_prefix)
